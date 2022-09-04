@@ -1,6 +1,6 @@
 {
   "name": "@nitra/njwt",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Fork (JWT Library for Node.js) with ignore expiration",
   "engines": {
     "node": ">=6.0"
@@ -61,6 +61,7 @@
   },
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "properties.json"
   ]
 }

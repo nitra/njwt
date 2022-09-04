@@ -1,0 +1,52 @@
+name: CI
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: # build any changes to main
+      - main
+    tags: # all tags
+      - '*'
+  pull_request: # build all PRs
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [18]
+
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: "read"
+      id-token: "write"
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '${{ matrix.node_version }}'
+    - run: npm install
+    - run: npm test
+
+    - name: Publish to coveralls.io
+      uses: coverallsapp/github-action@1.1.3
+      with:
+        github-token: '${{ github.token }}'
+
+    - id: "auth"
+      name: "Authenticate to Google Cloud"
+      uses: "google-github-actions/auth@v0"
+      with:
+        workload_identity_provider: "projects/753698311885/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+        service_account: "github-service-account@nitraai.iam.gserviceaccount.com"
+
+    - id: secrets
+      uses: google-github-actions/get-secretmanager-secrets@main
+      with:
+        secrets: |-
+          npm-token:nitraai/npm-token
+          
+    - name: publish
+      run: npx @jsdevtools/npm-publish --token=${{ steps.secrets.outputs.npm-token }} --access=public
